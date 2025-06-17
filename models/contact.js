@@ -1,18 +1,27 @@
 const fs = require('fs').promises;
+const path = require('path');
 const uuid = require('uuid');
+
 let contacts = [];
 
-try {
-    const data = await fs.readFile('./contacts.json', 'utf8');
-    contacts = JSON.parse(data);
-} catch (err) {
-    console.error('Не удалось загрузить контакты:', err);
+async function loadContacts() {
+    try {
+        const data = await fs.readFile(path.join(__dirname, '../contacts.json'), 'utf8');
+        contacts = JSON.parse(data);
+    } catch (err) {
+        console.error('Не удалось загрузить контакты:', err);
+    }
 }
 
-class Contact {
-    getAllContacts = async () => contacts;
+loadContacts(); 
 
-    getContact = async id => contacts.find(c => c.id === id) || null;
+class Contact {
+    getAllContacts = () => Promise.resolve(contacts);
+
+    getContact = async (id) => {
+        const contact = contacts.find(c => c.id === id);
+        return contact ? contact : 'Not found';
+    };
 
     addContact = async (name, phone) => {
         const newContact = { id: uuid.v4(), name, phone };
@@ -23,21 +32,30 @@ class Contact {
 
     editContact = async (id, name, phone) => {
         const contact = contacts.find(c => c.id === id);
-        if (!contact) throw new Error('Контакт не найден');
-        contact.name = name;
-        contact.phone = phone;
-        await this.saveToFile();
-        return contact;
+        if (contact) {
+            contact.name = name;
+            contact.phone = phone;
+            await this.saveToFile();
+            return contact;
+        }
+        throw new Error('Contact not found');
     };
 
-    deleteContact = async id => {
-        const len = contacts.length;
-        contacts = contacts.filter(c => c.id !== id);
-        if (contacts.length < len) await this.saveToFile();
+    deleteContact = async (id) => {
+        const index = contacts.findIndex(c => c.id === id);
+        if (index !== -1) {
+            contacts.splice(index, 1);
+            await this.saveToFile();
+        }
+        return contacts;
     };
 
     saveToFile = async () => {
-        await fs.writeFile('./contacts.json', JSON.stringify(contacts, null, 4));
+        try {
+            await fs.writeFile(path.join(__dirname, '../contacts.json'), JSON.stringify(contacts, null, 4));
+        } catch (err) {
+            console.error('Ошибка записи файла:', err);
+        }
     };
 }
 
