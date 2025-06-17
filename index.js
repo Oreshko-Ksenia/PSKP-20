@@ -12,13 +12,7 @@ const app = express();
 const hbs = exphbs.create({
     layoutsDir: path.join(__dirname, 'views', 'layouts'),
     extname: '.hbs',
-    defaultLayout: 'layout',
-    partialsDir: path.join(__dirname, 'views', 'partials'),
-    helpers: {
-        dismiss: function () {
-            return "window.location.href = '/'";
-        }
-    }
+    defaultLayout: 'layout'
 });
 
 app.engine('hbs', hbs.engine);

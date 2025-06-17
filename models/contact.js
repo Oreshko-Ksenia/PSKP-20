@@ -11,24 +11,26 @@ class Contact {
         return contact ? contact : 'Not found'
     };
 
-    addContact = async data => {
-        contacts.push({
+    addContact = async (name, phone) => {
+        const newContact = {
             id: uuid.v4(),
-            name: data.name,
-            phone: data.phone
-        });
+            name: name,
+            phone: phone
+        };
+        contacts.push(newContact);
         await this.saveToFile();
-        return contacts;
+        return newContact;
     };
 
-    editContact = async (id, data) => {
+    editContact = async (id, name, phone) => {
         const contact = await contacts.find(c => c.id === id);
         if (contact) {
-            contact.name = data.name;
-            contact.phone = data.phone;
+            contact.name = name;
+            contact.phone = phone;
+            await this.saveToFile();
+            return contact;
         }
-        await this.saveToFile();
-        return contacts;
+        throw new Error('Contact not found');
     };
 
     deleteContact = async id => {
@@ -48,6 +50,5 @@ class Contact {
         }
     }
 }
-
 
 module.exports = Contact;

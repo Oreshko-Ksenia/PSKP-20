@@ -2,13 +2,13 @@ const express = require('express');
 const router = express.Router();
 const contactController = require('../controllers/contactController');
 
+router.get('/', (req, res) => {
+    res.render('contacts');
+});
 
-router.get('/', contactController.getAllContacts);
-router.get('/add', contactController.addContactForm);
-router.get('/edit/:id', contactController.editContactForm);
-
-router.post('/add', contactController.addContact);
-router.post('/edit/:id', contactController.editContact);
-router.post('/delete/:id', contactController.deleteContact);
+router.get('/api/contacts', contactController.getAllContactsApi);
+router.post('/api/contacts', contactController.addContactApi);
+router.put('/api/contacts/:id', contactController.editContactApi);
+router.delete('/api/contacts/:id', contactController.deleteContactApi);
 
 module.exports = router;

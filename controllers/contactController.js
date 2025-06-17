@@ -72,6 +72,50 @@ const deleteContact = async (req, res) => {
     }
 }
 
+const getAllContactsApi = async (req, res) => {
+    try {
+        const contacts = await contactService.getAllContacts();
+        res.json(contacts);
+    } catch (err) {
+        console.error(err);
+        res.status(500).json({ error: 'Internal server error' });
+    }
+};
+
+const addContactApi = async (req, res) => {
+    try {
+        const { name, phone } = req.body;
+        const newContact = await contactService.addContact(name, phone);
+        res.status(201).json(newContact);
+    } catch (err) {
+        console.error(err);
+        res.status(500).json({ error: 'Internal server error' });
+    }
+};
+
+const editContactApi = async (req, res) => {
+    try {
+        const { id } = req.params;
+        const { name, phone } = req.body;
+        const updatedContact = await contactService.editContact(id, name, phone);
+        res.json(updatedContact);
+    } catch (err) {
+        console.error(err);
+        res.status(500).json({ error: 'Internal server error' });
+    }
+};
+
+const deleteContactApi = async (req, res) => {
+    try {
+        const { id } = req.params;
+        await contactService.deleteContact(id);
+        res.status(204).send();
+    } catch (err) {
+        console.error(err);
+        res.status(500).json({ error: 'Internal server error' });
+    }
+};
+
 exports.getAllContacts = getAllContacts;
 exports.getContact = getContact;
 exports.addContactForm = addContactForm;
@@ -79,3 +123,10 @@ exports.addContact = addContact;
 exports.editContactForm = editContactForm;
 exports.editContact = editContact;
 exports.deleteContact = deleteContact;
+
+module.exports = {
+    getAllContactsApi,
+    addContactApi,
+    editContactApi,
+    deleteContactApi
+};
