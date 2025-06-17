@@ -1,54 +1,44 @@
-const fs = require('fs');
+const fs = require('fs').promises;
 const uuid = require('uuid');
-const contacts = require('../contacts') || [];
+let contacts = [];
+
+try {
+    const data = await fs.readFile('./contacts.json', 'utf8');
+    contacts = JSON.parse(data);
+} catch (err) {
+    console.error('Не удалось загрузить контакты:', err);
+}
 
 class Contact {
+    getAllContacts = async () => contacts;
 
-    getAllContacts = async () => await contacts;
-
-    getContact = async id => {
-        const contact = await contacts.find(c => c.id === id);
-        return contact ? contact : 'Not found'
-    };
+    getContact = async id => contacts.find(c => c.id === id) || null;
 
     addContact = async (name, phone) => {
-        const newContact = {
-            id: uuid.v4(),
-            name: name,
-            phone: phone
-        };
+        const newContact = { id: uuid.v4(), name, phone };
         contacts.push(newContact);
         await this.saveToFile();
         return newContact;
     };
 
     editContact = async (id, name, phone) => {
-        const contact = await contacts.find(c => c.id === id);
-        if (contact) {
-            contact.name = name;
-            contact.phone = phone;
-            await this.saveToFile();
-            return contact;
-        }
-        throw new Error('Contact not found');
+        const contact = contacts.find(c => c.id === id);
+        if (!contact) throw new Error('Контакт не найден');
+        contact.name = name;
+        contact.phone = phone;
+        await this.saveToFile();
+        return contact;
     };
 
     deleteContact = async id => {
-        const index = contacts.findIndex(c => c.id === id);
-        if (index !== -1) {
-            contacts.splice(index, 1);
-        }
-        await this.saveToFile();
-        return contacts;
+        const len = contacts.length;
+        contacts = contacts.filter(c => c.id !== id);
+        if (contacts.length < len) await this.saveToFile();
     };
 
     saveToFile = async () => {
-        try {
-            await fs.promises.writeFile('./contacts.json', JSON.stringify(contacts, null, 4));
-        } catch (err) {
-            console.log(err);
-        }
-    }
+        await fs.writeFile('./contacts.json', JSON.stringify(contacts, null, 4));
+    };
 }
 
 module.exports = Contact;
